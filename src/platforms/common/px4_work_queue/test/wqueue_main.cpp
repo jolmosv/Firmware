@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2019 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,70 +31,27 @@
  *
  ****************************************************************************/
 
-/**
- * @file List.hpp
- *
- * A linked list.
- */
+#include "wqueue_test.h"
+#include "wqueue_scheduled_test.h"
 
-#pragma once
+#include <px4_log.h>
+#include <px4_middleware.h>
+#include <px4_app.h>
+#include <stdio.h>
 
-template<class T>
-class ListNode
+int PX4_MAIN(int argc, char **argv)
 {
-public:
+	px4::init(argc, argv, "wqueue_test");
 
-	void setSibling(T sibling) { _sibling = sibling; }
-	const T getSibling() const { return _sibling; }
+	PX4_INFO("wqueue test 1");
+	WQueueTest wq1;
+	wq1.main();
 
-protected:
+	PX4_INFO("wqueue test 2 (scheduled)");
+	WQueueScheduledTest wq2;
+	wq2.main();
 
-	T _sibling{nullptr};
+	PX4_INFO("wqueue test complete, exiting");
 
-};
-
-template<class T>
-class List
-{
-public:
-
-	void add(T newNode)
-	{
-		newNode->setSibling(getHead());
-		_head = newNode;
-	}
-
-	bool remove(T removeNode)
-	{
-		// base case
-		if (removeNode == _head) {
-			_head = nullptr;
-			return true;
-		}
-
-		for (T node = _head; node != nullptr; node = node->getSibling()) {
-			// is sibling the node to remove?
-			if (node->getSibling() == removeNode) {
-				// replace sibling
-				if (node->getSibling() != nullptr) {
-					node->setSibling(node->getSibling()->getSibling());
-
-				} else {
-					node->setSibling(nullptr);
-				}
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	const T getHead() const { return _head; }
-
-	bool empty() const { return _head == nullptr; }
-
-protected:
-
-	T _head{nullptr};
-};
+	return 0;
+}
